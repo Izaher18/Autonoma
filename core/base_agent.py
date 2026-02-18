@@ -182,13 +182,7 @@ Always think step by step and explain your reasoning."""
             Execution result
         """
         import asyncio
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        
-        return loop.run_until_complete(self.process(task))
+        return asyncio.run(self.process(task))
     
     def reset(self):
         """Reset the agent's conversation history and state."""
@@ -222,7 +216,12 @@ Always think step by step and explain your reasoning."""
         with open(filepath, 'r') as f:
             state_data = json.load(f)
         
-        self.conversation_history = [Message(**msg) for msg in state_data["conversation_history"]]
-        self.state = state_data["state"]
+        if "config" in state_data:
+            self.config = AgentConfig(**state_data["config"])
+        self.conversation_history = [
+            Message(**{**msg, "timestamp": datetime.fromisoformat(msg["timestamp"]) if isinstance(msg.get("timestamp"), str) else msg.get("timestamp", datetime.now())})
+            for msg in state_data.get("conversation_history", [])
+        ]
+        self.state = state_data.get("state", {})
         
         logger.info(f"Loaded agent state from {filepath}")

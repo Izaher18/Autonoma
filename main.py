@@ -2,6 +2,7 @@
 
 import sys
 import argparse
+import logging
 from pathlib import Path
 
 # Add project root to path
@@ -41,7 +42,7 @@ def main():
     
     # Set log level
     if args.verbose:
-        logger.setLevel("DEBUG")
+        logger.setLevel(logging.DEBUG)
     
     # Validate configuration
     if not Config.validate():

@@ -1,6 +1,7 @@
 """Agent manager for coordinating multiple agents."""
 
 import logging
+from datetime import datetime
 from typing import Dict, List, Optional, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -94,7 +95,7 @@ class AgentManager:
             "agent": agent_name,
             "task": task,
             "result": result,
-            "timestamp": logger.handlers[0].formatter.formatTime if logger.handlers else None
+            "timestamp": datetime.now().isoformat(),
         })
         
         return result
