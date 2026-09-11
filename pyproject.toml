@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Ilias Zaher", email = "izaher18@bu.edu"}
 ]
 keywords = ["ai", "agents", "llm", "framework"]
 classifiers = [
@@ -45,10 +45,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/aiagentic"
-Documentation = "https://github.com/yourusername/aiagentic#readme"
-Repository = "https://github.com/yourusername/aiagentic"
-Issues = "https://github.com/yourusername/aiagentic/issues"
+Homepage = "https://github.com/Izaher18/Autonoma"
+Documentation = "https://github.com/Izaher18/Autonoma#readme"
+Repository = "https://github.com/Izaher18/Autonoma"
+Issues = "https://github.com/Izaher18/Autonoma/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -14,7 +14,7 @@ We take the security of the Agentic AI Framework seriously. If you believe you h
 
 ### Please DO NOT report security vulnerabilities through public GitHub issues.
 
-Instead, please report them via email to: [your-email@example.com]
+Instead, please report them via email to: [izaher18@bu.edu](mailto:izaher18@bu.edu)
 
 You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
 

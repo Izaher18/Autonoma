@@ -8,7 +8,7 @@
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](./tests)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**A production-ready, modular framework for building intelligent AI agents with reasoning capabilities, tool usage, and memory management.**
+**A modular Python framework for building LLM agents with tool calling, memory, and multi-agent coordination.**
 
 [Features](#-features) •
 [Quick Start](#-quick-start) •
@@ -31,15 +31,14 @@
 ## 📁 Project Structure
 
 ```
-aiagentic/
-├── agents/              # Agent implementations
-├── core/               # Core agent framework
-├── tools/              # Tool definitions and implementations
-├── memory/             # Memory management systems
-├── config/             # Configuration files
-├── examples/           # Example use cases
-├── tests/              # Test suite
-└── utils/              # Utility functions
+Autonoma/
+├── agents/     # Research, code assistant, and data analyst agents
+├── core/       # BaseAgent, AgentManager, tool registry
+├── memory/     # Short-term and long-term memory
+├── config/     # Environment-based settings
+├── examples/   # Runnable demos
+├── tests/      # pytest suite
+└── utils/      # Logging and helpers
 ```
 
 ## 🚀 Quick Start
@@ -170,8 +169,9 @@ If you find this project useful, please consider:
 
 ## 📬 Contact
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/aiagentic/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/aiagentic/discussions)
+- **Author**: Ilias Zaher ([Izaher18](https://github.com/Izaher18))
+- **Issues**: [GitHub Issues](https://github.com/Izaher18/Autonoma/issues)
+- **Email**: [izaher18@bu.edu](mailto:izaher18@bu.edu)
 
 ## 🙏 Acknowledgments
 
