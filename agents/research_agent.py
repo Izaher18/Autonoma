@@ -2,6 +2,7 @@
 
 import json
 import logging
+from datetime import date
 from typing import Dict, Any
 
 from core.base_agent import BaseAgent
@@ -12,14 +13,16 @@ logger = logging.getLogger(__name__)
 
 class ResearchAgent(BaseAgent):
     """Agent specialized in research and information gathering."""
-    
-    def __init__(self, name: str = "ResearchAgent"):
+
+    def __init__(self, name: str = "ResearchAgent", **kwargs):
         """Initialize the research agent.
-        
+
         Args:
             name: Name of the agent
+            **kwargs: Passed to BaseAgent (model, temperature, llm, use_llm)
         """
-        system_prompt = """You are a research assistant specialized in gathering and analyzing information.
+        system_prompt = """You are a research assistant specialized in gathering \
+and analyzing information.
 Your goal is to provide comprehensive, well-researched answers based on available data.
 
 When conducting research:
@@ -28,96 +31,100 @@ When conducting research:
 3. Synthesize findings into a coherent response
 4. Cite sources when possible
 5. Acknowledge limitations in available data"""
-        
-        super().__init__(name=name, system_prompt=system_prompt)
-    
-    @tool(description="Search for information on a given topic")
+
+        super().__init__(name=name, system_prompt=system_prompt, **kwargs)
+
+    @tool(description="Search for information on a given topic", expose_to_llm=False)
     def search(self, query: str) -> str:
         """Search for information on a topic.
-        
+
         Args:
             query: Search query
-            
+
         Returns:
             Search results
         """
         # Simulated search - in production, integrate with real search API
         logger.info(f"Searching for: {query}")
-        return f"Search results for '{query}':\n- Result 1: Information about {query}\n- Result 2: More details on {query}\n- Result 3: Recent developments in {query}"
-    
-    @tool(description="Analyze and summarize a piece of text")
+        return (
+            f"Search results for '{query}':\n"
+            f"- Result 1: Information about {query}\n"
+            f"- Result 2: More details on {query}\n"
+            f"- Result 3: Recent developments in {query}"
+        )
+
+    @tool(description="Analyze and summarize a piece of text", expose_to_llm=False)
     def analyze_text(self, text: str, focus: str = "general") -> str:
         """Analyze and summarize text.
-        
+
         Args:
             text: Text to analyze
             focus: Analysis focus (general, sentiment, key_points)
-            
+
         Returns:
             Analysis results
         """
         logger.info(f"Analyzing text with focus: {focus}")
-        
+
         word_count = len(text.split())
         char_count = len(text)
-        
+
         analysis = f"""Text Analysis (Focus: {focus}):
 - Word count: {word_count}
 - Character count: {char_count}
 - Summary: {text[:200]}...
 """
         return analysis
-    
-    @tool(description="Extract key facts from information")
+
+    @tool(description="Extract key facts from information", expose_to_llm=False)
     def extract_facts(self, information: str) -> Dict[str, Any]:
         """Extract key facts from information.
-        
+
         Args:
             information: Information to extract facts from
-            
+
         Returns:
             Dictionary of extracted facts
         """
         logger.info("Extracting facts from information")
-        
+
         # Simulated fact extraction
         facts = {
-            "extracted_at": "2025-10-08",
+            "extracted_at": date.today().isoformat(),
             "key_points": [
                 "Point 1 extracted from text",
                 "Point 2 extracted from text",
-                "Point 3 extracted from text"
+                "Point 3 extracted from text",
             ],
-            "confidence": "high"
+            "confidence": "high",
         }
-        
+
         return facts
-    
-    async def process(self, user_input: str) -> str:
+
+    async def process_offline(self, user_input: str) -> str:
         """Process research request.
-        
+
         Args:
             user_input: User's research query
-            
+
         Returns:
             Research results
         """
         self.add_message("user", user_input)
-        
+
         # Simple research workflow
         try:
             # Step 1: Search for information
             search_results = self.call_tool("search", {"query": user_input})
-            
+
             # Step 2: Analyze the results
-            analysis = self.call_tool("analyze_text", {
-                "text": search_results,
-                "focus": "key_points"
-            })
-            
+            analysis = self.call_tool(
+                "analyze_text", {"text": search_results, "focus": "key_points"}
+            )
+
             # Step 3: Extract facts
             facts = self.call_tool("extract_facts", {"information": search_results})
-            
+
             # Compile final response
             response = f"""Research Results for: {user_input}
 
@@ -129,10 +136,10 @@ Analysis:
 Key Facts:
 {json.dumps(facts, indent=2)}
 """
-            
+
             self.add_message("assistant", response)
             return response
-            
+
         except Exception as e:
             error_msg = f"Error during research: {str(e)}"
             logger.error(error_msg)

@@ -29,23 +29,23 @@ def print_features():
     """Print key features."""
     features = """
 ✨ KEY FEATURES:
-   
+
    🎯 Modular Agent Architecture
       → Easy to create and customize AI agents
       → Pre-built agents for common tasks
-   
+
    🛠️  Tool/Function Calling
       → Agents can use external tools and APIs
       → Simple decorator-based tool definition
-   
+
    🧠 Memory Management
       → Short-term and long-term memory systems
       → Persistent storage across sessions
-   
+
    👥 Multi-Agent Collaboration
       → Coordinate multiple agents
       → Parallel and sequential execution
-   
+
    🔌 Extensible Design
       → Add new tools and capabilities easily
       → Plugin-friendly architecture
@@ -60,16 +60,16 @@ def print_quick_start():
 
    1. Setup (First Time):
       $ ./setup.sh
-   
+
    2. Configure API Keys:
       $ cp .env.example .env
       $ nano .env  # Add your API keys
-   
+
    3. Run Examples:
       $ python examples/basic_usage.py
       $ python examples/multi_agent.py
       $ python examples/memory_demo.py
-   
+
    4. Use CLI:
       $ python main.py --agent research --task "Research AI agents"
       $ python main.py --agent code --task "Create sorting function"
@@ -86,15 +86,15 @@ def print_available_agents():
    📚 Research Agent
       → Conducts research and gathers information
       → Analyzes and synthesizes findings
-   
+
    💻 Code Assistant Agent
       → Generates code in multiple languages
       → Debugs and optimizes existing code
-   
+
    📊 Data Analyst Agent
       → Analyzes data and identifies trends
       → Generates insights and visualizations
-   
+
    🎭 Custom Agents
       → Create your own specialized agents
       → See examples/custom_agent.py
@@ -142,13 +142,13 @@ def print_resources():
       → QUICKSTART.md          (Quick start guide)
       → PROJECT_STRUCTURE.md   (Project layout)
       → docs/DOCUMENTATION.md  (Comprehensive docs)
-   
+
    🎓 Examples:
       → examples/basic_usage.py    (Single agent usage)
       → examples/multi_agent.py    (Multi-agent collaboration)
       → examples/memory_demo.py    (Memory system)
       → examples/custom_agent.py   (Build your own)
-   
+
    🧪 Testing:
       → pytest tests/              (Run all tests)
       → pytest tests/test_*.py     (Run specific tests)
@@ -198,9 +198,9 @@ def main():
     print_resources()
     print_next_steps()
     print_footer()
-    
+
     # Check if setup has been run
-    if not Path("venv").exists():
+    if not (Path("venv").exists() or Path(".venv").exists()):
         print("⚠️  Virtual environment not found!")
         print("   Run './setup.sh' to set up the project.\n")
     elif not Path(".env").exists():

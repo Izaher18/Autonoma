@@ -51,6 +51,12 @@ logs/
 # ChromaDB
 chroma_data/
 
+# Runtime data written by agents and examples
+data/
+memory_data/
+memory_store.json
+examples/demo_memory.json
+
 # Test coverage
 .coverage
 htmlcov/

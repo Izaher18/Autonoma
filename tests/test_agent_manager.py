@@ -1,18 +1,16 @@
-
 """Tests for agent manager functionality."""
 
 import pytest
 from core.agent_manager import AgentManager
 from core.base_agent import BaseAgent
-from core.tool_registry import tool
 
 
 class MockAgent(BaseAgent):
     """Mock agent for testing."""
-    
+
     def __init__(self, name="MockAgent"):
         super().__init__(name=name)
-    
+
     async def process(self, user_input: str) -> str:
         """Process mock input."""
         return f"{self.config.name} processed: {user_input}"
@@ -30,7 +28,7 @@ def test_add_agent():
     manager = AgentManager()
     agent = MockAgent(name="Agent1")
     manager.add_agent(agent)
-    
+
     assert "Agent1" in manager.agents
     assert manager.get_agent("Agent1") is agent
 
@@ -40,7 +38,7 @@ def test_add_duplicate_agent():
     manager = AgentManager()
     agent1 = MockAgent(name="Agent1")
     agent2 = MockAgent(name="Agent1")
-    
+
     manager.add_agent(agent1)
     with pytest.raises(ValueError):
         manager.add_agent(agent2)
@@ -51,7 +49,7 @@ def test_remove_agent():
     manager = AgentManager()
     agent = MockAgent(name="Agent1")
     manager.add_agent(agent)
-    
+
     manager.remove_agent("Agent1")
     assert "Agent1" not in manager.agents
 
@@ -61,7 +59,7 @@ def test_list_agents():
     manager = AgentManager()
     manager.add_agent(MockAgent(name="Agent1"))
     manager.add_agent(MockAgent(name="Agent2"))
-    
+
     agents = manager.list_agents()
     assert len(agents) == 2
     assert "Agent1" in agents
@@ -72,7 +70,7 @@ def test_execute_task():
     """Test executing a task."""
     manager = AgentManager()
     manager.add_agent(MockAgent(name="Agent1"))
-    
+
     result = manager.execute_task("Agent1", "test task")
     assert "Agent1 processed: test task" in result
 
@@ -84,19 +82,69 @@ def test_execute_task_nonexistent_agent():
         manager.execute_task("NonExistent", "task")
 
 
+def test_execute_parallel_preserves_order_and_captures_errors():
+    """Results come back in task order; failures become error strings."""
+    manager = AgentManager()
+    manager.add_agent(MockAgent(name="Agent1"))
+    manager.add_agent(MockAgent(name="Agent2"))
+
+    results = manager.execute_parallel(
+        [
+            {"agent": "Agent1", "task": "first"},
+            {"agent": "Missing", "task": "second"},
+            {"agent": "Agent2", "task": "third"},
+        ]
+    )
+
+    assert results[0] == "Agent1 processed: first"
+    assert results[1].startswith("Error:")
+    assert results[2] == "Agent2 processed: third"
+
+
+def test_orchestrate_substitutes_dependency_results():
+    """{{id}} placeholders are replaced with the output of that step."""
+    manager = AgentManager()
+    manager.add_agent(MockAgent(name="Agent1"))
+    manager.add_agent(MockAgent(name="Agent2"))
+
+    outcome = manager.orchestrate(
+        [
+            {"id": "step2", "agent": "Agent2", "task": "use {{step1}}", "depends_on": ["step1"]},
+            {"id": "step1", "agent": "Agent1", "task": "start"},
+        ]
+    )
+
+    assert outcome["execution_order"] == ["step1", "step2"]
+    assert outcome["results"]["step2"] == "Agent2 processed: use Agent1 processed: start"
+
+
+def test_orchestrate_circular_dependency():
+    """Unresolvable dependencies raise instead of looping forever."""
+    manager = AgentManager()
+    manager.add_agent(MockAgent(name="Agent1"))
+
+    with pytest.raises(ValueError):
+        manager.orchestrate(
+            [
+                {"id": "a", "agent": "Agent1", "task": "x", "depends_on": ["b"]},
+                {"id": "b", "agent": "Agent1", "task": "y", "depends_on": ["a"]},
+            ]
+        )
+
+
 def test_reset_all():
     """Test resetting all agents."""
     manager = AgentManager()
     agent1 = MockAgent(name="Agent1")
     agent2 = MockAgent(name="Agent2")
-    
+
     manager.add_agent(agent1)
     manager.add_agent(agent2)
-    
+
     agent1.add_message("user", "test")
     agent2.add_message("user", "test")
-    
+
     manager.reset_all()
-    
+
     assert len(agent1.conversation_history) == 0
     assert len(agent2.conversation_history) == 0

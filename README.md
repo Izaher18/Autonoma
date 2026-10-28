@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](./tests)
@@ -77,24 +77,36 @@ print(result)
 - **ResearchAgent**: Conducts research and gathers information
 - **CodeAssistantAgent**: Helps with code generation and debugging
 - **DataAnalystAgent**: Analyzes data and generates insights
-- **OrchestratorAgent**: Coordinates multiple agents for complex tasks
+
+Use `AgentManager.orchestrate()` to coordinate multiple agents with dependencies between steps.
 
 ## 🛠️ Creating Custom Agents
 
 ```python
 from core.base_agent import BaseAgent
-from core.decorators import tool
+from core.tool_registry import tool
 
-class MyCustomAgent(BaseAgent):
-    def __init__(self, name="CustomAgent"):
-        super().__init__(name=name)
-        self.description = "My custom agent"
-    
-    @tool(description="Custom tool")
-    def my_custom_tool(self, input: str) -> str:
-        # Your tool logic here
-        return f"Processed: {input}"
+class WeatherAgent(BaseAgent):
+    def __init__(self, **kwargs):
+        super().__init__(name="WeatherAgent", **kwargs)
+
+    @tool(description="Get the current temperature for a city")
+    def get_temperature(self, city: str, unit: str = "celsius") -> dict:
+        """Look up the temperature.
+
+        Args:
+            city: City name
+            unit: celsius or fahrenheit
+        """
+        return {"city": city, "temperature": 21, "unit": unit}
+
+print(WeatherAgent().execute("Is it warm in Lisbon right now?"))
 ```
+
+The model sees each `@tool` as a native function definition. The JSON schema is
+built from the type hints, defaults, and the `Args:` section of the docstring.
+Pass `expose_to_llm=False` to keep a tool for offline workflows only. Override
+`process_offline()` to give an agent a scripted fallback when no API key is set.
 
 ## 📝 Environment Setup
 
@@ -103,6 +115,19 @@ Create a `.env` file with your API keys:
 ```
 OPENAI_API_KEY=your_key_here
 ANTHROPIC_API_KEY=your_key_here
+# Optional: any OpenAI model, or a "claude-*" model for Anthropic
+DEFAULT_MODEL=
+```
+
+With a key set, agents run a tool-calling loop against the model. With an empty
+`DEFAULT_MODEL`, they use `gpt-5.4-mini` (OpenAI) or `claude-haiku-5-5` (Anthropic).
+Without any keys they fall back to scripted offline workflows. You can also choose
+the mode per run:
+
+```bash
+python main.py --agent analyst --task "Mean and trend of 120, 135, 128, 150"
+python main.py --agent code --task "Write a binary search in Python" --model claude-sonnet-5-5
+python main.py --agent research --task "AI agents" --offline
 ```
 
 ## 🧪 Running Tests
@@ -131,7 +156,7 @@ pytest tests/
 
 ## 🛠️ Tech Stack
 
-- **Language**: Python 3.8+
+- **Language**: Python 3.10+
 - **LLM APIs**: OpenAI, Anthropic
 - **Testing**: pytest, pytest-cov
 - **Code Quality**: black, flake8, mypy

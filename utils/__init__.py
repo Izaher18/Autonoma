@@ -8,7 +8,7 @@ from .helpers import (
     truncate_text,
     format_timestamp,
     merge_dicts,
-    safe_divide
+    safe_divide,
 )
 
 __all__ = [
@@ -20,5 +20,5 @@ __all__ = [
     "truncate_text",
     "format_timestamp",
     "merge_dicts",
-    "safe_divide"
+    "safe_divide",
 ]
