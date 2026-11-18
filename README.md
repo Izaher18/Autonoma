@@ -12,7 +12,7 @@
 
 Talk to Autonoma like a chief of staff. It remembers what matters, calls specialists when needed, and shows you what it's doing.
 
-> **Local only for now.** Autonoma runs on your machine (`python main.py --web` → `http://127.0.0.1:8000`). There is no hosted/public deployment yet — we're still sorting out testing before taking it further.
+> **Local only for now.** Autonoma runs on your machine (`python main.py --web` → `http://127.0.0.1:8000`). There is no hosted/public deployment yet — I'm still sorting out testing before taking it further.
 
 [Features](#-features) •
 [Web UI](#-web-ui) •
@@ -35,7 +35,7 @@ Talk to Autonoma like a chief of staff. It remembers what matters, calls special
 
 ## 💬 Web UI
 
-**Runs locally only** while we continue testing. Nothing is deployed to a public URL yet.
+**Runs locally only** while I continue testing. Nothing is deployed to a public URL yet.
 
 ```bash
 pip install -r requirements.txt
@@ -186,7 +186,7 @@ pytest tests/
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+I welcome contributions! Please see my [Contributing Guide](CONTRIBUTING.md) for details.
 
 Ways to contribute:
 - 🐛 Report bugs
