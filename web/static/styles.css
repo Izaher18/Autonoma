@@ -82,23 +82,24 @@ body {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) 260px;
+  grid-template-columns: 176px minmax(0, 1fr) 260px;
   gap: 0;
+  width: 100%;
   min-height: 100vh;
-  max-width: 1200px;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .frame.history-collapsed {
-  grid-template-columns: 200px minmax(0, 1fr);
+  grid-template-columns: 176px minmax(0, 1fr);
 }
 
 .agent-rail {
   position: sticky;
   top: 0;
+  left: 0;
   align-self: start;
   height: 100vh;
-  padding: 24px 12px 20px;
+  padding: 24px 10px 20px 8px;
   border-right: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.38);
   backdrop-filter: blur(14px);
