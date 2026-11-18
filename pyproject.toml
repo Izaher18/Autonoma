@@ -32,6 +32,8 @@ dependencies = [
     "tenacity>=8.2.3",
     "requests>=2.31.0",
     "httpx>=0.27.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
 ]
 
 [project.optional-dependencies]
@@ -51,7 +53,7 @@ Repository = "https://github.com/Izaher18/Autonoma"
 Issues = "https://github.com/Izaher18/Autonoma/issues"
 
 [tool.setuptools]
-packages = ["agents", "config", "core", "memory", "utils"]
+packages = ["agents", "config", "core", "memory", "utils", "web"]
 py-modules = ["main"]
 
 [tool.pytest.ini_options]
@@ -63,7 +65,7 @@ addopts = "-v --cov=. --cov-report=html --cov-report=term"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.coverage.run]
-omit = [".venv/*", "venv/*", "tests/*", "examples/*", "welcome.py"]
+omit = [".venv/*", "venv/*", "tests/*", "examples/*", "welcome.py", "web/static/*"]
 
 [tool.black]
 line-length = 100
