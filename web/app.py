@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -60,7 +61,7 @@ AGENT_CATALOG = [
 app = FastAPI(title="Autonoma", version="0.2.0")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-# session_id -> {"agents": {id: BaseAgent}, "events": list}
+# session_id -> session dict
 _sessions: Dict[str, Dict[str, Any]] = {}
 
 
@@ -80,6 +81,29 @@ class ChatResponse(BaseModel):
     mode: str
 
 
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _title_from_history(history: List[Dict[str, Any]]) -> str:
+    for message in history:
+        if message.get("role") == "user" and message.get("content"):
+            text = str(message["content"]).strip().replace("\n", " ")
+            return text[:72] + ("…" if len(text) > 72 else "")
+    return "New conversation"
+
+
+def _session_summary(session_id: str, session: Dict[str, Any]) -> Dict[str, Any]:
+    history = session.get("history", [])
+    return {
+        "id": session_id,
+        "title": session.get("title") or _title_from_history(history),
+        "updated_at": session.get("updated_at") or _now(),
+        "message_count": len(history),
+        "agent": session.get("last_agent") or "autonoma",
+    }
+
+
 def _make_agent(agent_id: str, offline: bool, model: Optional[str]) -> BaseAgent:
     options = {"use_llm": not offline, "model": model}
     factories = {
@@ -97,7 +121,14 @@ def _get_session(session_id: Optional[str]) -> str:
     if session_id and session_id in _sessions:
         return session_id
     new_id = session_id or str(uuid.uuid4())
-    _sessions[new_id] = {"agents": {}, "history": []}
+    _sessions[new_id] = {
+        "agents": {},
+        "history": [],
+        "title": "New conversation",
+        "updated_at": _now(),
+        "last_agent": "autonoma",
+        "archived": False,
+    }
     return new_id
 
 
@@ -110,6 +141,25 @@ def _agent_for(
     if key not in agents:
         agents[key] = _make_agent(agent_id, offline, model)
     return agents[key]
+
+
+def _record_turn(
+    session_id: str,
+    agent_id: str,
+    user_message: str,
+    reply: str,
+    events: List[Dict[str, Any]],
+) -> None:
+    session = _sessions[session_id]
+    session["history"].append({"role": "user", "content": user_message, "agent": agent_id})
+    session["history"].append(
+        {"role": "assistant", "content": reply, "agent": agent_id, "events": events}
+    )
+    if session.get("title") in (None, "", "New conversation"):
+        session["title"] = _title_from_history(session["history"])
+    session["updated_at"] = _now()
+    session["last_agent"] = agent_id
+    session["archived"] = False
 
 
 @app.get("/")
@@ -137,6 +187,29 @@ async def list_agents():
     return {"agents": AGENT_CATALOG}
 
 
+@app.get("/api/sessions")
+async def list_sessions():
+    """List conversations kept on this server process (newest first)."""
+    items = [
+        _session_summary(session_id, session)
+        for session_id, session in _sessions.items()
+        if session.get("history")
+    ]
+    items.sort(key=lambda item: item["updated_at"], reverse=True)
+    return {"sessions": items}
+
+
+@app.get("/api/sessions/{session_id}")
+async def get_session(session_id: str):
+    session = _sessions.get(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return {
+        **_session_summary(session_id, session),
+        "history": session.get("history", []),
+    }
+
+
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest):
     session_id = _get_session(req.session_id)
@@ -156,12 +229,7 @@ async def chat(req: ChatRequest):
         agent.on_event = None
 
     mode = f"model {agent.llm.model}" if agent.llm else "offline"
-    _sessions[session_id]["history"].append(
-        {"role": "user", "content": req.message, "agent": req.agent}
-    )
-    _sessions[session_id]["history"].append(
-        {"role": "assistant", "content": reply, "agent": req.agent, "events": events}
-    )
+    _record_turn(session_id, req.agent, req.message, reply, events)
     return ChatResponse(
         session_id=session_id,
         agent=req.agent,
@@ -177,15 +245,19 @@ async def chat_stream(req: ChatRequest):
     session_id = _get_session(req.session_id)
     agent = _agent_for(session_id, req.agent, req.offline, req.model)
     queue: asyncio.Queue = asyncio.Queue()
+    events: List[Dict[str, Any]] = []
 
     def on_event(event: str, payload: Dict[str, Any]):
-        queue.put_nowait({"type": event, **payload})
+        item = {"type": event, **payload}
+        events.append(item)
+        queue.put_nowait(item)
 
     async def run():
         agent.on_event = on_event
         try:
             reply = await asyncio.to_thread(agent.execute, req.message.strip())
             mode = f"model {agent.llm.model}" if agent.llm else "offline"
+            _record_turn(session_id, req.agent, req.message, reply, events)
             await queue.put(
                 {
                     "type": "done",
@@ -193,6 +265,7 @@ async def chat_stream(req: ChatRequest):
                     "agent": req.agent,
                     "reply": reply,
                     "mode": mode,
+                    "title": _sessions[session_id].get("title"),
                 }
             )
         except Exception as e:
@@ -216,14 +289,36 @@ async def chat_stream(req: ChatRequest):
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
+@app.post("/api/sessions/{session_id}/archive")
+async def archive_session(session_id: str):
+    """Keep the conversation in history; stop using it as the active thread."""
+    session = _sessions.get(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    session["archived"] = True
+    session["updated_at"] = _now()
+    return {"ok": True, "session": _session_summary(session_id, session)}
+
+
+@app.delete("/api/sessions/{session_id}")
+async def delete_session(session_id: str):
+    if session_id not in _sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+    del _sessions[session_id]
+    return {"ok": True}
+
+
 @app.post("/api/session/{session_id}/reset")
 async def reset_session(session_id: str):
+    """Legacy: clear agents in-place. Prefer archive + new session for history."""
     session = _sessions.get(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     for agent in session["agents"].values():
         agent.reset()
     session["history"] = []
+    session["title"] = "New conversation"
+    session["updated_at"] = _now()
     return {"ok": True}
 
 
