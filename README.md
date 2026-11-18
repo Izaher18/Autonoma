@@ -12,6 +12,8 @@
 
 Talk to Autonoma like a chief of staff. It remembers what matters, calls specialists when needed, and shows you what it's doing.
 
+> **Local only for now.** Autonoma runs on your machine (`python main.py --web` → `http://127.0.0.1:8000`). There is no hosted/public deployment yet — we're still sorting out testing before taking it further.
+
 [Features](#-features) •
 [Web UI](#-web-ui) •
 [Quick Start](#-quick-start) •
@@ -32,6 +34,8 @@ Talk to Autonoma like a chief of staff. It remembers what matters, calls special
 - **Offline demos**: Scripted workflows when no API key is set
 
 ## 💬 Web UI
+
+**Runs locally only** while we continue testing. Nothing is deployed to a public URL yet.
 
 ```bash
 pip install -r requirements.txt
