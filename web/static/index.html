@@ -20,16 +20,20 @@
     </div>
 
     <div class="frame">
+      <nav class="agent-rail" aria-label="Agents">
+        <div class="rail-brand">
+          <p class="presence" id="presence">
+            <span class="pulse" aria-hidden="true"></span>
+            <span id="presence-label">Standing by</span>
+          </p>
+          <h1 class="brand">Autonoma</h1>
+        </div>
+        <div class="agent-list" id="agent-list"></div>
+      </nav>
+
       <div class="shell">
         <header class="top">
-          <div class="brand-block">
-            <p class="presence" id="presence">
-              <span class="pulse" aria-hidden="true"></span>
-              <span id="presence-label">Standing by</span>
-            </p>
-            <h1 class="brand">Autonoma</h1>
-            <p class="tagline">Your personal agent. Tell it what needs doing.</p>
-          </div>
+          <p class="tagline" id="active-agent-label">Personal assistant</p>
           <div class="top-actions">
             <button
               type="button"
@@ -45,10 +49,6 @@
             </button>
           </div>
         </header>
-
-        <section class="roster" aria-label="Who you're talking to">
-          <div class="roster-track" id="agent-list"></div>
-        </section>
 
         <main class="stage" id="stage">
           <div class="welcome" id="welcome">
