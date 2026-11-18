@@ -6,3 +6,4 @@ per-file-ignores =
     # These scripts add the project root to sys.path before importing it.
     main.py: E402
     examples/*.py: E402
+    web/app.py: E402
