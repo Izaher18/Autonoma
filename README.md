@@ -8,12 +8,14 @@
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](./tests)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**A modular Python framework for building LLM agents with tool calling, memory, and multi-agent coordination.**
+**A personal AI agent that gets work done — not just a chatbot you prompt.**
+
+Talk to Autonoma like a chief of staff. It remembers what matters, calls specialists when needed, and shows you what it's doing.
 
 [Features](#-features) •
+[Web UI](#-web-ui) •
 [Quick Start](#-quick-start) •
 [Documentation](#-documentation) •
-[Examples](#-examples) •
 [Contributing](#-contributing)
 
 </div>
@@ -22,19 +24,30 @@
 
 ## 🌟 Features
 
-- **Modular Agent Architecture**: Easily create and customize AI agents
-- **Tool/Function Calling**: Agents can use external tools and APIs
-- **Memory Management**: Short-term and long-term memory systems
-- **Multi-Agent Collaboration**: Agents can work together on complex tasks
-- **Extensible Design**: Add new tools and capabilities easily
+- **Personal assistant first**: Autonoma understands goals in everyday language
+- **Specialist team**: Research, code, and data agents work behind the scenes
+- **Memory**: Short-term and long-term recall across a conversation
+- **Tool calling**: Native OpenAI / Anthropic function calling
+- **Web UI**: Muse-style chat interface with live activity trail
+- **Offline demos**: Scripted workflows when no API key is set
+
+## 💬 Web UI
+
+```bash
+pip install -r requirements.txt
+python main.py --web
+```
+
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000). Pick Autonoma (or a specialist), talk naturally, and watch tools/specialists fire in the activity trail.
 
 ## 📁 Project Structure
 
 ```
 Autonoma/
-├── agents/     # Research, code assistant, and data analyst agents
-├── core/       # BaseAgent, AgentManager, tool registry
+├── agents/     # Autonoma + research, code, analyst specialists
+├── core/       # BaseAgent, LLM clients, tool registry
 ├── memory/     # Short-term and long-term memory
+├── web/        # FastAPI chat UI
 ├── config/     # Environment-based settings
 ├── examples/   # Runnable demos
 ├── tests/      # pytest suite
@@ -46,34 +59,31 @@ Autonoma/
 ### Installation
 
 ```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+cp .env.example .env       # add your API keys
+```
+
+### Talk to Autonoma (CLI)
+
+```bash
+python main.py --agent autonoma --task "Remember I prefer Python, then draft a retry helper"
+python main.py --web
 ```
 
 ### Basic Usage
 
 ```python
-from agents.research_agent import ResearchAgent
-from core.agent_manager import AgentManager
+from agents import AutonomaAgent
 
-# Initialize agent manager
-manager = AgentManager()
-
-# Create a research agent
-agent = ResearchAgent(name="Researcher")
-manager.add_agent(agent)
-
-# Run a task
-result = agent.execute("Research the latest developments in AI agents")
-print(result)
+assistant = AutonomaAgent()
+print(assistant.execute("Brief me on personal AI agents, then note that I care about privacy"))
 ```
 
 ## 🤖 Available Agents
 
+- **AutonomaAgent**: Personal assistant — remembers context, delegates to specialists
 - **ResearchAgent**: Conducts research and gathers information
 - **CodeAssistantAgent**: Helps with code generation and debugging
 - **DataAnalystAgent**: Analyzes data and generates insights
