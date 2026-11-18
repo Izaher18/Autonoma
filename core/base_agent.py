@@ -75,12 +75,21 @@ class BaseAgent(ABC):
         self.conversation_history: List[Message] = []
         self.tools: Dict[str, Callable] = {}
         self.state: Dict[str, Any] = {}
+        self.on_event: Optional[Callable[[str, Dict[str, Any]], None]] = None
 
         # Register tools from methods decorated with @tool
         self._register_tools()
 
         mode = f"model {self.llm.model}" if self.llm else "offline"
         logger.info(f"Initialized agent: {name} ({mode})")
+
+    def emit(self, event: str, **payload: Any) -> None:
+        """Notify listeners (e.g. the web UI) that something happened."""
+        if self.on_event:
+            try:
+                self.on_event(event, payload)
+            except Exception as e:
+                logger.debug(f"on_event handler failed: {e}")
 
     def _register_tools(self):
         """Register methods decorated with @tool as available tools."""
@@ -157,13 +166,16 @@ Always think step by step and explain your reasoning."""
             )
 
         logger.info(f"Calling tool: {tool_name} with input: {tool_input}")
+        self.emit("tool_start", tool=tool_name, input=tool_input)
 
         try:
             result = self.tools[tool_name](**tool_input)
             logger.info(f"Tool {tool_name} completed successfully")
+            self.emit("tool_end", tool=tool_name, ok=True)
             return result
         except Exception as e:
             logger.error(f"Error calling tool {tool_name}: {str(e)}")
+            self.emit("tool_end", tool=tool_name, ok=False, error=str(e))
             raise
 
     def get_tool_schemas(self) -> List[Dict[str, Any]]:
@@ -214,6 +226,7 @@ Always think step by step and explain your reasoning."""
         system = self.get_system_prompt()
         tools_used: List[str] = []
 
+        self.emit("thinking", agent=self.config.name)
         for _ in range(self.config.max_iterations):
             response = await asyncio.to_thread(
                 self.llm.chat,
@@ -224,6 +237,7 @@ Always think step by step and explain your reasoning."""
                 self.config.max_tokens,
             )
             if not response.tool_calls:
+                self.emit("answer", agent=self.config.name)
                 self.add_message("assistant", response.text, {"tools_used": tools_used})
                 return response.text
 
@@ -233,6 +247,7 @@ Always think step by step and explain your reasoning."""
             for call in response.tool_calls:
                 tools_used.append(call.name)
                 messages.append(self._run_tool_call(call, exposed))
+            self.emit("thinking", agent=self.config.name)
 
         logger.warning(
             f"{self.config.name} hit max_iterations={self.config.max_iterations} "
