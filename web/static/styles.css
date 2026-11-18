@@ -82,25 +82,53 @@ body {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-columns: 200px minmax(0, 1fr) 260px;
   gap: 0;
   min-height: 100vh;
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
 .frame.history-collapsed {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: 200px minmax(0, 1fr);
+}
+
+.agent-rail {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  padding: 24px 12px 20px;
+  border-right: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rail-brand .brand {
+  font-size: 1.55rem;
+}
+
+.rail-brand .presence {
+  margin-bottom: 8px;
+}
+
+.agent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .shell {
   position: relative;
   min-width: 0;
   min-height: 100vh;
-  padding: 28px 20px 20px;
+  padding: 24px 22px 20px;
   display: grid;
-  grid-template-rows: auto auto 1fr auto auto;
-  gap: 18px;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 16px;
 }
 
 .history-panel {
@@ -217,7 +245,7 @@ body {
 .top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
 }
 
@@ -225,8 +253,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 8px;
-  font-size: 0.78rem;
+  margin: 0;
+  font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-soft);
@@ -250,16 +278,15 @@ body {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(2.4rem, 6vw, 3.4rem);
   letter-spacing: -0.03em;
   line-height: 1;
 }
 
 .tagline {
-  margin: 10px 0 0;
+  margin: 0;
   color: var(--ink-soft);
-  font-weight: 300;
-  max-width: 28ch;
+  font-weight: 400;
+  font-size: 0.92rem;
 }
 
 .ghost {
@@ -280,52 +307,38 @@ body {
   color: var(--ink);
 }
 
-.roster {
-  overflow: auto;
-  margin: 0 -4px;
-  padding: 2px 4px;
-}
-
-.roster-track {
-  display: flex;
-  gap: 10px;
-  min-width: max-content;
-}
-
 .agent {
   border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.35);
-  border-radius: 14px;
-  padding: 12px 14px;
+  background: transparent;
+  border-radius: 12px;
+  padding: 10px 12px;
   text-align: left;
   cursor: pointer;
-  min-width: 168px;
-  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  width: 100%;
+  transition: border-color 0.2s ease, background 0.2s ease;
   font: inherit;
   color: inherit;
 }
 
 .agent:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.55);
 }
 
 .agent.is-active {
-  border-color: rgba(196, 92, 38, 0.45);
+  border-color: rgba(196, 92, 38, 0.4);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 244, 236, 0.9));
-  box-shadow: var(--shadow);
 }
 
 .agent-name {
   display: block;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .agent-role {
   display: block;
   margin-top: 2px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--ink-soft);
 }
 
@@ -600,8 +613,28 @@ textarea::placeholder {
 }
 
 @media (max-width: 960px) {
-  .frame {
+  .frame,
+  .frame.history-collapsed {
     grid-template-columns: 1fr;
+  }
+
+  .agent-rail {
+    position: relative;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 16px 14px 12px;
+  }
+
+  .agent-list {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 8px;
+  }
+
+  .agent {
+    min-width: 132px;
+    width: auto;
   }
 
   .history-panel {
@@ -623,12 +656,13 @@ textarea::placeholder {
 
 @media (max-width: 640px) {
   .shell {
-    padding: 18px 14px 14px;
-    gap: 14px;
+    padding: 16px 14px 14px;
+    gap: 12px;
   }
 
   .top {
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .top-actions {
