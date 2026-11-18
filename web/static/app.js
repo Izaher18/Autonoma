@@ -33,6 +33,7 @@
     historyList: document.getElementById("history-list"),
     historyEmpty: document.getElementById("history-empty"),
     historyToggle: document.getElementById("history-toggle"),
+    activeAgentLabel: document.getElementById("active-agent-label"),
   };
 
   function loadStore() {
@@ -215,9 +216,9 @@
     if (!conv) return;
     persistCurrent();
     state.sessionId = conv.id;
-    state.agent = conv.agent || state.agent;
     state.messages = Array.isArray(conv.messages) ? [...conv.messages] : [];
     localStorage.setItem(ACTIVE_KEY, id);
+    setActiveAgent(conv.agent || state.agent);
     renderAgents();
     renderThread();
     renderHistory();
@@ -251,6 +252,17 @@
     setPresence(false, "Standing by");
   }
 
+  function setActiveAgent(agentId) {
+    const agent = state.agents.find((a) => a.id === agentId) || state.agents[0];
+    if (!agent) return;
+    state.agent = agent.id;
+    els.activeAgentLabel.textContent = agent.role;
+    els.message.placeholder =
+      agent.id === "autonoma"
+        ? "Ask Autonoma anything — goals, tasks, questions…"
+        : `Talk to ${agent.name}…`;
+  }
+
   function renderAgents() {
     els.agentList.innerHTML = "";
     state.agents.forEach((agent) => {
@@ -259,17 +271,15 @@
       btn.className = `agent${agent.id === state.agent ? " is-active" : ""}`;
       btn.innerHTML = `<span class="agent-name">${agent.name}</span><span class="agent-role">${agent.role}</span>`;
       btn.addEventListener("click", () => {
-        state.agent = agent.id;
+        setActiveAgent(agent.id);
         renderAgents();
-        els.message.placeholder =
-          agent.id === "autonoma"
-            ? "Ask Autonoma anything — goals, tasks, questions…"
-            : `Talk to ${agent.name}…`;
         persistCurrent();
         renderHistory();
       });
       els.agentList.appendChild(btn);
     });
+    const active = state.agents.find((a) => a.id === state.agent);
+    if (active) els.activeAgentLabel.textContent = active.role;
   }
 
   function autosize() {
@@ -316,6 +326,7 @@
       const preferred = state.agents.find((a) => a.default) || state.agents[0];
       state.agent = preferred.id;
     }
+    setActiveAgent(state.agent);
     renderAgents();
     setHistoryOpen(state.historyOpen);
     renderHistory();
